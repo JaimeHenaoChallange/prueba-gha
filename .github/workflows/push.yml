@@ -1,25 +1,29 @@
+name: Docker Build & Push
+
 on:
   push:
     branches:
-      - main  # Puedes ajustar la rama según tus necesidades
-
-name: deploy
+      - main
 
 jobs:
-  deploy:
-    name: deploy to cluster
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2  # Asegúrate de usar una versión específica, no "master"
+      uses: actions/checkout@v2
 
-    - name: Build and push to Docker
-      uses: docker/build-push-action@v2  # Actualiza a la versión 2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: "prueba-gha"  # Cambia "prueba-gha" por el nombre que desees
-        tag_with_ref: true
-        tags: ${{ github.sha }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build and push Docker image
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker buildx create --use
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker buildx build --platform linux/amd64,linux/arm64 -t yourdockerhubusername/yourimagename:latest -f path/to/Dockerfile .
+
+
 
