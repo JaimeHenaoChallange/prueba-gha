@@ -25,51 +25,35 @@
 #         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 #         docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:latest -f ./Dockerfile --push .
 
-name: Update Deployment and Push with Versioned Tag
+name: Docker Build & Push with Unique Tag
 
 on:
-  workflow_run:
-    workflows: ["Docker Build & Push"]
-    types:
-      - completed
+  push:
+    branches:
+      - main
 
 jobs:
-  update-and-push:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Read current version from file
-      id: read_version
-      run: echo "CURRENT_VERSION=\$(cat version.txt)" >> $GITHUB_ENV
-
-    - name: Increment version and store in file
-      id: increment_version
-      run: echo "NEXT_VERSION=v\$((\${{ env.CURRENT_VERSION }} + 1))" >> $GITHUB_ENV && echo "${{ env.NEXT_VERSION }}" > version.txt
-
-    - name: Update deployment for Minikube
-      run: |
-        sed -i "s|image: jaimehenao8126/prueba-gha:.*|image: jaimehenao8126/prueba-gha:${{ env.NEXT_VERSION }}|g" deployment.yaml
-
-    - name: Commit and push changes
-      run: |
-        git config user.email "actions@github.com"
-        git config user.name "GitHub Actions"
-        git add deployment.yaml version.txt
-        git commit -m "Update image in deployment.yaml to version ${{ env.NEXT_VERSION }} [skip ci]"
-        git push origin main
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - name: Build and push Docker image with versioned tag
+    - name: Generate unique tag
+      id: generate_tag
+      run: echo "TAG=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+    - name: Build and push Docker image with unique tag
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        VERSIONED_TAG: ${{ env.NEXT_VERSION }}
+        UNIQUE_TAG: ${{ env.TAG }}
       run: |
         docker buildx create --use
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:${VERSIONED_TAG} -f ./Dockerfile --push .
+        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:${UNIQUE_TAG} -f ./Docker/Dockerfile --push ./Docker
+
