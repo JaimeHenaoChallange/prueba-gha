@@ -25,7 +25,7 @@ jobs:
     - name: Update deployment.yaml with new image
       run: |
         NEW_IMAGE="jaimehenao8126/prueba-gha:${{ env.TAG }}"
-        yq e -i '.spec.template.spec.containers[0].image = env(NEW_IMAGE)' Kubernetes/deployment.yaml
+        yq e -i '.spec.template.spec.containers[0].image = strenv(NEW_IMAGE)' Kubernetes/deployment.yaml
 
     - name: Commit and push changes
       run: |
@@ -34,4 +34,3 @@ jobs:
         git add Kubernetes/deployment.yaml
         git commit -m "Update image in deployment.yaml to version ${{ env.TAG }} [skip ci]"
         git push origin main
-
