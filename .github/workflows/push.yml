@@ -36,6 +36,10 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -44,16 +48,12 @@ jobs:
       uses: docker/setup-buildx-action@v1
 
     - name: Generate unique tag
-      id: generate_tag
-      run: echo "TAG=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+      run: echo "TAG=$(date +'%Y%m%d')-kantox" >> $GITHUB_ENV
 
     - name: Build and push Docker image with unique tag
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        UNIQUE_TAG: ${{ env.TAG }}
       run: |
         docker buildx create --use
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:${UNIQUE_TAG} -f ./Docker/Dockerfile --push ./Docker
+        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:${TAG} -f ./Docker/Dockerfile --push ./Docker
+
 
