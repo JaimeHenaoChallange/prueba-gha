@@ -1,17 +1,25 @@
-on: push
+on:
+  push:
+    branches:
+      - main  # Puedes ajustar la rama según tus necesidades
+
 name: deploy
+
 jobs:
   deploy:
     name: deploy to cluster
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@master
-    - name: build and push to docker
-      uses: docker/build-push-action@v1
+    - name: Checkout repository
+      uses: actions/checkout@v2  # Asegúrate de usar una versión específica, no "master"
+
+    - name: Build and push to Docker
+      uses: docker/build-push-action@v2  # Actualiza a la versión 2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: "prueba-gha"  # Cambia "nombre-personalizado" por el nombre que desees
+        repository: "prueba-gha"  # Cambia "prueba-gha" por el nombre que desees
         tag_with_ref: true
-        tag_with_sha: true  # Corregí el nombre de la opción
         tags: ${{ github.sha }}
+
