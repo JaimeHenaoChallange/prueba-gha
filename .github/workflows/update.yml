@@ -19,13 +19,13 @@ jobs:
       with:
         version: 'latest'
 
-    - name: Install yq
-      run: sudo wget https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
+    - name: Install yq v4
+      run: sudo wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
 
     - name: Update deployment.yaml with new image
       run: |
         NEW_IMAGE="jaimehenao8126/prueba-gha:${{ env.TAG }}"
-        yq eval -i ".spec.template.spec.containers[0].image = \"$NEW_IMAGE\"" Kubernetes/deployment.yaml
+        yq e -i '.spec.template.spec.containers[0].image = env(NEW_IMAGE)' Kubernetes/deployment.yaml
 
     - name: Commit and push changes
       run: |
@@ -34,3 +34,4 @@ jobs:
         git add Kubernetes/deployment.yaml
         git commit -m "Update image in deployment.yaml to version ${{ env.TAG }} [skip ci]"
         git push origin main
+
