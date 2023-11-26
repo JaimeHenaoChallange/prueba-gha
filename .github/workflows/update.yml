@@ -14,6 +14,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Debug GitHub Token
+      run: echo "Token: ${{ secrets.GITHUB_TOKEN }}"
+
     - name: Set up kubectl
       uses: azure/setup-kubectl@v1
       with:
@@ -26,6 +29,9 @@ jobs:
       run: |
         NEW_IMAGE="jaimehenao8126/prueba-gha:${{ env.TAG }}"
         yq e -i '.spec.template.spec.containers[0].image = strenv(NEW_IMAGE)' Kubernetes/deployment.yaml
+
+    - name: Debug Git Remote
+      run: git remote -v
 
     - name: Set up Git credentials
       run: |
