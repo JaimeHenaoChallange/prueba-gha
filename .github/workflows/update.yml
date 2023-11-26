@@ -14,22 +14,30 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Debug GitHub Token
+      run: echo "Token: ${{ secrets.GITHUB_TOKEN }}"
+
     - name: Set up kubectl
       uses: azure/setup-kubectl@v1
       with:
         version: 'latest'
 
     - name: Install yq v4
-      run: sudo wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
+      run: |
+        sudo wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_amd64 -O /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
 
     - name: Update deployment.yaml with new image
       run: |
         NEW_IMAGE="jaimehenao8126/prueba-gha:${{ env.TAG }}"
-        yq e -i '.spec.template.spec.containers[0].image = strenv(NEW_IMAGE)' Kubernetes/deployment.yaml
+        yq eval -i '.spec.template.spec.containers[0].image = strenv("${NEW_IMAGE}")' Kubernetes/deployment.yaml
+
+    - name: Debug Git Remote
+      run: git remote -v
 
     - name: Set up Git credentials
       run: |
         git config --global user.email "actions@github.com"
         git config --global user.name "GitHub Actions"
-        git remote add origin_with_credentials https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-        git push origin_with_credentials main
+        git config credential.helper store
+        git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
