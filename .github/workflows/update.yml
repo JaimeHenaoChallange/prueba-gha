@@ -1,0 +1,36 @@
+name: Update Deployment in ArgoCD
+
+on:
+  workflow_run:
+    workflows: ["Docker Build & Push with Unique Tag"]
+    types:
+      - completed
+
+jobs:
+  update-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v1
+      with:
+        version: 'latest'
+
+    - name: Install yq
+      run: sudo wget https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
+
+    - name: Update deployment.yaml with new image
+      run: |
+        NEW_IMAGE="jaimehenao8126/prueba-gha:${{ env.TAG }}"
+        yq eval -i ".spec.template.spec.containers[0].image = \"$NEW_IMAGE\"" Kubernetes/deployment.yaml
+
+    - name: Commit and push changes
+      run: |
+        git config user.email "actions@github.com"
+        git config user.name "GitHub Actions"
+        git add Kubernetes/deployment.yaml
+        git commit -m "Update image in deployment.yaml to version ${{ env.TAG }} [skip ci]"
+        git push origin main
