@@ -27,10 +27,9 @@ jobs:
         NEW_IMAGE="jaimehenao8126/prueba-gha:${{ env.TAG }}"
         yq e -i '.spec.template.spec.containers[0].image = strenv(NEW_IMAGE)' Kubernetes/deployment.yaml
 
-    - name: Commit and push changes
+    - name: Set up Git credentials
       run: |
-        git config user.email "actions@github.com"
-        git config user.name "GitHub Actions"
-        git add Kubernetes/deployment.yaml
-        git commit -m "Update image in deployment.yaml to version ${{ env.TAG }} [skip ci]"
-        git push origin main
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git remote add origin_with_credentials https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        git push origin_with_credentials main
