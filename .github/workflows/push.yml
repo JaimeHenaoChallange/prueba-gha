@@ -1,4 +1,4 @@
-# name: Docker Build & Push
+# name: Docker Build & Push with Unique Tag
 
 # on:
 #   push:
@@ -9,6 +9,10 @@
 #   build-and-push:
 #     runs-on: ubuntu-latest
 
+#     env:
+#       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+#       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
 #     steps:
 #     - name: Checkout repository
 #       uses: actions/checkout@v2
@@ -16,14 +20,14 @@
 #     - name: Set up Docker Buildx
 #       uses: docker/setup-buildx-action@v1
 
-#     - name: Build and push Docker image
-#       env:
-#         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-#         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+#     - name: Generate unique tag
+#       run: echo "TAG=$(date +'%Y%m%d')-kantox" >> $GITHUB_ENV
+
+#     - name: Build and push Docker image with unique tag
 #       run: |
 #         docker buildx create --use
 #         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-#         docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:latest -f ./Dockerfile --push .
+#         docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:${TAG} -f ./Docker/Dockerfile --push ./Docker
 
 name: Docker Build & Push with Unique Tag
 
@@ -47,13 +51,18 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - name: Generate unique tag
-      run: echo "TAG=$(date +'%Y%m%d')-kantox" >> $GITHUB_ENV
+    - name: Read and increment version
+      id: version
+      run: echo "::set-output name=version::$(($(cat version.txt) + 1))"
 
     - name: Build and push Docker image with unique tag
       run: |
         docker buildx create --use
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:${TAG} -f ./Docker/Dockerfile --push ./Docker
+        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:v${{ steps.version.outputs.version }} -f ./Docker/Dockerfile --push ./Docker
+
+    - name: Save version to repository
+      run: echo "${{ steps.version.outputs.version }}" > version.txt
+
 
 
