@@ -14,9 +14,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Debug GitHub Token
-      run: echo "Token: ${{ secrets.GITHUB_TOKEN }}"
-
     - name: Set up kubectl
       uses: azure/setup-kubectl@v1
       with:
