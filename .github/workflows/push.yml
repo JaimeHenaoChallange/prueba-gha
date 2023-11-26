@@ -22,5 +22,5 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
         docker buildx create --use
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:latest -f ./Dockerfile --push --load .
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:latest -f ./Dockerfile --push .
