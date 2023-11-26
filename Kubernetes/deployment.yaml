@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hw-prueba-gha-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world-prueba-gha
+  template:
+    metadata:
+      labels:
+        app: hello-world-prueba-gha
+    spec:
+      containers:
+      - name: hello-world-prueba-gha-container
+        image: jaimehenao8126/prueba-gha:20231126-kantox
+        ports:
+        - containerPort: 80
