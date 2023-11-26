@@ -23,7 +23,4 @@ jobs:
       run: |
         docker buildx create --use
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker buildx build --platform linux/amd64,linux/arm64 -t yourdockerhubusername/yourimagename:latest -f path/to/Dockerfile .
-
-
-
+        docker buildx build --platform linux/amd64,linux/arm64 -t jaimehenao8126/prueba-gha:latest -f ./ --push --load .
